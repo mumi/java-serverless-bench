@@ -1,0 +1,214 @@
+{
+    "providers": {
+        "aws": {
+            "region": "eu-central-1",
+            "aws_access_key_id": "",
+            "aws_secret_access_key": ""
+        },
+        "gcp": {
+            "region": "europe-west3",
+            "project": "",
+            "apis_enabled": false
+        },
+        "azure": {
+            "region": "germanywestcentral",
+            "subscription": ""
+        },
+        "knative": {
+            "namespace": "default",
+            "jaeger_url": "http://localhost:16686",
+            "image-registry": "docker.io",
+            "image-group": "",
+            "s3_endpoint": "http://minio.default.svc.cluster.local:9000",
+            "s3_access_key_id": "minioadmin",
+            "s3_secret_access_key": "minioadmin"
+        }
+    },
+    "benchmarks": [
+        {
+            "name": "echo",
+            "timeout": 30,
+            "memory": 832
+        },
+        {
+            "name": "image-recognition",
+            "timeout": 90,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/image-recognition",
+            "storage": true,
+            "request": {
+                "method": "POST",
+                "body": {
+                    "file": "fake-resnet/782px-Pumiforme.JPG",
+                    "model": "model/resnet50.pt",
+                    "synset": "synset.txt"
+                }
+            }
+        },
+        {
+            "name": "video-processing",
+            "timeout": 90,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/video-processing",
+            "storage": true,
+            "request": {
+                "method": "POST",
+                "body": {
+                    "file": "city.mp4",
+                    "operation": "extract-gif",
+                    "debug": true
+                }
+            }
+        },
+        {
+            "name": "dna-visualization",
+            "timeout": 60,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/dna-visualization",
+            "storage": true,
+            "request": {
+                "method": "POST",
+                "body": {
+                    "file": "bacillus_subtilis.fasta",
+                    "debug": true
+                }
+            }
+        },
+        {
+            "name": "thumbnailer",
+            "timeout": 30,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/thumbnailer",
+            "storage": true,
+            "request": {
+                "method": "POST",
+                "body": {
+                    "file": "0_action-adrenaline-adventure-1047051.jpg",
+                    "width": 300,
+                    "height": 200,
+                    "debug": true
+                }
+            }
+        },
+        {
+            "name": "compress",
+            "timeout": 30,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/compress",
+            "storage": true,
+            "request": {
+                "method": "POST",
+                "body": {
+                    "input_key": "medium",
+                    "debug": false
+                }
+            }
+        },
+        {
+            "name": "uploader",
+            "timeout": 30,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/uploader",
+            "storage": true,
+            "request": {
+                "method": "POST",
+                "body": {
+                    "file": "medium",
+                    "debug": true
+                }
+            }
+        },
+        {
+            "name": "dynamic-html",
+            "timeout": 30,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/dynamic-html",
+            "request": {
+                "method": "POST",
+                "body": {
+                    "size": "large",
+                    "debug": false
+                }
+            }
+        },
+        {
+            "name": "graph-bfs",
+            "timeout": 20,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/graph-bfs",
+            "request": {
+                "method": "POST",
+                "body": {
+                    "size": "large",
+                    "debug": false
+                }
+            }
+        },
+        {
+            "name": "graph-mst",
+            "timeout": 20,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/graph-mst",
+            "request": {
+                "method": "POST",
+                "body": {
+                    "size": "large",
+                    "debug": false
+                }
+            }
+        },
+        {
+            "name": "graph-pagerank",
+            "timeout": 20,
+            "memory": [
+                832,
+                1769,
+                3008
+            ],
+            "endpoint": "/graph-pagerank",
+            "request": {
+                "method": "POST",
+                "body": {
+                    "size": "large",
+                    "debug": false
+                }
+            }
+        }
+    ]
+}

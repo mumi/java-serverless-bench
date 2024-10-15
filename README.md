@@ -1,7 +1,7 @@
 # java-serverless-bench Project
 
 This project contains a benchmark suite for Java (Quarkus) applications that can be deployed as AWS Lambda, Google Cloud Functions, Azure Functions and Knative Functions. 
-It is easily extensible with other programmes and offers many useful features, such as cloud agnostic object store access (with Apache jClouds), a deployer and a benchmarker tool. 
+It is easily extensible with other programmes and offers many useful features, such as cloud agnostic object store access (with Apache jClouds) and a deployer tool. 
 The existing applications are based on the [knative-quarkus-bench](https://github.com/IBM/knative-quarkus-bench) project, where applications have been ported from [SeBS: Serverless Benchmark Suite](https://github.com/spcl/serverless-benchmarks), which was developed by researchers at ETH Z&uuml;rich.
 
 Quarkus is a cloud-native Java framework based on modern standard APIs.
