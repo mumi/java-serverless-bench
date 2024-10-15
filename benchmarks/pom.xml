@@ -2,18 +2,18 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.ibm.trl</groupId>
+  <parent>
+    <groupId>com.ibm.trl</groupId>
+    <artifactId>java-serverless-benchmark</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
   <artifactId>benchmarks</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <parent>
-    <groupId>com.ibm.trl</groupId>
-    <artifactId>knative-quarkus-bench</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
-  </parent>
   <modules>
-    <module>sleep</module>
+    <module>echo</module>
     <module>helloworld</module>
+    <module>sleep</module>
     <module>network</module>
     <module>clock-synchronization</module>
     <module>server-reply</module>
@@ -29,22 +29,51 @@
     <module>graph-pagerank</module>
   </modules>
   <properties>
-    <quarkus.container-image.build>true</quarkus.container-image.build>
+    <quarkus.native.container-build>false</quarkus.native.container-build>
+    <quarkus.native.builder-image>${mandrel-arm64-builder-image}</quarkus.native.builder-image>
+    <mandrel-amd64-builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1.3.1-Final-java21-amd64</mandrel-amd64-builder-image>
+    <mandrel-arm64-builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1.3.1-Final-java21-arm64</mandrel-arm64-builder-image>
+
+    <quarkus.container-image.group></quarkus.container-image.group>
+    <quarkus.container-image.registry></quarkus.container-image.registry>
+    <quarkus.container-image.name>${project.artifactId}</quarkus.container-image.name>
+
     <quarkus.container-image.push>false</quarkus.container-image.push>
     <quarkus.container-image.tag>jvm</quarkus.container-image.tag>
-    <quarkus.container-image.registry></quarkus.container-image.registry>
-    <quarkus.container-image.group></quarkus.container-image.group>
-    <quarkus.docker.executable-name>docker</quarkus.docker.executable-name>
-    <quarkus.docker.network></quarkus.docker.network>
   </properties>
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>com.ibm.trl</groupId>
+        <artifactId>benchmark-wrapper</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+      </dependency>
       <dependency>
         <groupId>${quarkus.platform.group-id}</groupId>
         <artifactId>${quarkus.platform.artifact-id}</artifactId>
         <version>${quarkus.platform.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.sf.jfasta</groupId>
+        <artifactId>jfasta</artifactId>
+        <version>2.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot.jinjava</groupId>
+        <artifactId>jinjava</artifactId>
+        <version>2.7.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht-core</artifactId>
+        <version>1.5.1</version>
+      </dependency>
+      <dependency>
+        <groupId>net.bramp.ffmpeg</groupId>
+        <artifactId>ffmpeg</artifactId>
+        <version>0.8.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -55,9 +84,79 @@
         <artifactId>quarkus-maven-plugin</artifactId>
         <version>${quarkus.platform.version}</version>
         <extensions>true</extensions>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build</goal>
+              <goal>generate-code</goal>
+              <goal>generate-code-tests</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${compiler-plugin.version}</version>
+        <configuration>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire-plugin.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <maven.home>${maven.home}</maven.home>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${surefire-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <systemPropertyVariables>
+            <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+            <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+            <maven.home>${maven.home}</maven.home>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.kohlschutter.mavenplugins</groupId>
+        <artifactId>copy-rename-maven-plugin</artifactId>
+        <version>2.0.0</version>
+        <executions>
+          <execution>
+            <id>copy-file</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <sourceFile>${java.home}/lib/security/cacerts</sourceFile>
+                  <destinationFile>target/cacerts</destinationFile>
+                </fileSet>
+              </fileSets>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>native</id>
@@ -67,8 +166,264 @@
         </property>
       </activation>
       <properties>
-        <quarkus.package.type>native</quarkus.package.type>
-	  <quarkus.container-image.tag>native</quarkus.container-image.tag>
+        <skipITs>true</skipITs>
+        <skipTests>true</skipTests>
+        <quarkus.docker.dockerfile-native-path>${project.basedir}/src/main/docker/Dockerfile.native-micro</quarkus.docker.dockerfile-native-path>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.container-image.tag>native</quarkus.container-image.tag>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>azure</id>
+      <dependencyManagement>
+        <!--
+        jClouds uses some internals from Gson and the version is incompatible with the one used by the Azure Function Worker.
+        This is a workaround with a modified jclouds, until
+        https://github.com/Azure/azure-functions-java-worker/issues/739 or
+        https://github.com/Azure/azure-functions-java-worker/issues/424 is implemented.
+        -->
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.jclouds</groupId>
+            <artifactId>jclouds-allblobstore</artifactId>
+            <version>2.6.1-SNAPSHOT-modified</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-azure-functions-http</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <quarkus.azure-functions.app-settings.FUNCTIONS_WORKER_RUNTIME>java</quarkus.azure-functions.app-settings.FUNCTIONS_WORKER_RUNTIME>
+        <quarkus.azure-functions.app-name>${project.parent.artifactId}-${project.artifactId}</quarkus.azure-functions.app-name>
+        <quarkus.azure-functions.runtime.java-version>21</quarkus.azure-functions.runtime.java-version>
+        <quarkus.azure-functions.app-settings.FUNCTIONS_EXTENSION_VERSION>~4</quarkus.azure-functions.app-settings.FUNCTIONS_EXTENSION_VERSION>
+        <quarkus.http.root-path>/api</quarkus.http.root-path>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>custom-tasks</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <copy todir="target/azure-functions/${quarkus.azure-functions.app-name}" failonerror="false">
+                      <fileset dir="src/main/zip.jvm" erroronmissingdir="false" />
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>azure-native</id>
+      <properties>
+        <quarkus.azure-functions.app-name>${project.parent.artifactId}-${project.artifactId}</quarkus.azure-functions.app-name>
+        <skipITs>true</skipITs>
+        <skipTests>true</skipTests>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.http.root-path>/api</quarkus.http.root-path>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.native.builder-image>${mandrel-amd64-builder-image}</quarkus.native.builder-image>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>custom-tasks</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <mkdir dir="target/azure-functions" />
+                    <mkdir dir="target/azure-functions/${quarkus.azure-functions.app-name}" />
+                    <copy todir="target/azure-functions/${quarkus.azure-functions.app-name}">
+                      <fileset includes="*-runner, *.so" dir="target" />
+                    </copy>
+                    <move todir="target/azure-functions/${quarkus.azure-functions.app-name}">
+                      <fileset dir="target/azure-functions/${quarkus.azure-functions.app-name}">
+                        <include name="*-runner" />
+                      </fileset>
+                      <mapper from="*-runner" to="runner" type="glob" />
+                    </move>
+                    <chmod file="target/azure-functions/${quarkus.azure-functions.app-name}/runner" perm="755" />
+                    <!--suppress UnresolvedMavenProperty -->
+                    <echo file="target/azure-functions/${quarkus.azure-functions.app-name}/host.json">{"version": "2.0", "extensionBundle": {"id": "Microsoft.Azure.Functions.ExtensionBundle", "version": "[3.*, 4.0.0)"}, "customHandler": {"enableForwardingHttpRequest": true, "description": {"defaultExecutablePath": "runner", "workingDirectory": "", "arguments": ["-Dquarkus.http.port=${FUNCTIONS_CUSTOMHANDLER_PORT:8080}"]}}}</echo>
+                    <echo file="target/azure-functions/${quarkus.azure-functions.app-name}/local.settings.json">{"IsEncrypted":false,"Values":{"FUNCTIONS_WORKER_RUNTIME":"custom"}}</echo>
+                    <mkdir dir="target/azure-functions/${quarkus.azure-functions.app-name}/QuarkusHttp" />
+                    <echo file="target/azure-functions/${quarkus.azure-functions.app-name}/QuarkusHttp/function.json">{"bindings":[{"type":"httpTrigger","direction":"in","name":"req","route":"{*path}","methods":["GET","HEAD","POST","PUT","DELETE","CONNECT","OPTIONS","TRACE","PATCH"],"dataType":"binary","authLevel":"ANONYMOUS"},{"type":"http","direction":"out","name":"$return"}]}</echo>
+                    <copy todir="target/azure-functions/${quarkus.azure-functions.app-name}" failonerror="false">
+                      <fileset dir="src/main/zip.native" erroronmissingdir="false" />
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>azure-bytecode-modification</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+              <execution>
+                <id>azure-bytecode-modification</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>com.ibm.trl.serverlessbench.wrapper.AzureBytecodeModifier</mainClass>
+                  <arguments>
+                    <argument>${user.home}/.m2/repository/io/quarkus/quarkus-azure-functions-http/${quarkus.platform.version}/quarkus-azure-functions-http-${quarkus.platform.version}.jar</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>azure-native-bytecode-modification</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>com.ibm.trl.serverlessbench.wrapper.AzureNativeBytecodeModifier</mainClass>
+                  <arguments>
+                    <argument>${user.home}/.m2/repository/io/quarkus/quarkus-funqy-http/${quarkus.platform.version}/quarkus-funqy-http-${quarkus.platform.version}.jar</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>aws</id>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-amazon-lambda-http</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>aws-native</id>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-amazon-lambda-http</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <skipITs>true</skipITs>
+        <skipTests>true</skipTests>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.native.builder-image>${mandrel-amd64-builder-image}</quarkus.native.builder-image>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>gcp</id>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-google-cloud-functions-http</artifactId>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>custom-tasks</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <copy todir="target/deployment" failonerror="false">
+                      <fileset dir="src/main/zip.jvm" erroronmissingdir="false" />
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>gcp-native</id>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-funqy-knative-events</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <skipITs>true</skipITs>
+        <skipTests>true</skipTests>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.native.builder-image>${mandrel-amd64-builder-image}</quarkus.native.builder-image>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>knative</id>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-funqy-knative-events</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>knative-native</id>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-funqy-knative-events</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <skipITs>true</skipITs>
+        <skipTests>true</skipTests>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.native.builder-image>${mandrel-amd64-builder-image}</quarkus.native.builder-image>
       </properties>
     </profile>
   </profiles>

@@ -6,8 +6,8 @@ This application provides image classification feature using a deep learning mod
 
 ## Preparing Input Data
 
-- [resnet50.pt](src/main/resources/resnet50.pt)
-- [synset.txt](src/main/resources/synset.txt)
+- [resnet50.pt](../../benchmarks-data/image-recognition/model/resnet50.pt)
+- [synset.txt](../../benchmarks-data/image-recognition/synset.txt)
 - JPG files for inference processing. The JPG files we tested are found at https://github.com/spcl/serverless-benchmarks-data/tree/6a17a460f289e166abb47ea6298fb939e80e8beb/400.inference/411.image-recognition/fake-resnet.
 
 The input file is assumed to be stored in Cloud Object Storage (COS). COS environment variable configuration is described [here]( ../UsingCloudObjectStorage.md).
@@ -28,12 +28,12 @@ target/image-recognition-1.0.0-SNAPSHOT-runner
 
 This application receives the following parameters from POST data in JSON format:
 
-|Name         |Value                         |Required?|Default|
-|:-----------:|:------------------------------------|:-:|:------:|
-|input_bucket |COS bucket to download input files     |Y|(None) |
-|input        |COS object key of the input file       |Y|(None) |
-|model        |Model file name                        |Y|(None) |
-|synset       |Synset file name                       |Y|(None) |
+|     Name     | Value                              | Required? | Default |
+|:------------:|:-----------------------------------|:---------:|:-------:|
+| input_bucket | COS bucket to download input files |     Y     | (None)  |
+|    input     | COS object key of the input file   |     Y     | (None)  |
+|    model     | Model file name                    |     Y     | (None)  |
+|    synset    | Synset file name                   |     Y     | (None)  |
 
 For example:
 

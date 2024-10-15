@@ -48,12 +48,12 @@ target/dna-visualization-1.0.0-SNAPSHOT-runner
 
 This application receives the following parameters from POST data in JSON format:
 
-|Name         |Value                         |Required?|Default|Default is customizable?|
-|:-----------:|:------------------------------------|:-:|:------|:----------------------:|
-|input_bucket |COS bucket to download input files     |Y|(None) |Y|
-|output_bucket|COS bucket to upload output files      |Y|(None) |Y|
-|key          |COS object key of the input/output file|Y|(None) |Y|
-|debug        |Flag if output is uploaded to COS      |N|false  |N|
+|     Name      | Value                                   | Required? | Default | Default is customizable? |
+|:-------------:|:----------------------------------------|:---------:|:--------|:------------------------:|
+| input_bucket  | COS bucket to download input files      |     Y     | (None)  |            Y             |
+| output_bucket | COS bucket to upload output files       |     Y     | (None)  |            Y             |
+|      key      | COS object key of the input/output file |     Y     | (None)  |            Y             |
+|     debug     | Flag if output is uploaded to COS       |     N     | false   |            N             |
 
 For example:
 ```shell
@@ -96,8 +96,9 @@ and uploads the output to a COS bucket `MyOutputBucket` with the same object key
 
 The default values of the three parameters can be customized by using environment variables
 or by modifying `resources/application.properties`.  The following table describes this.
-|Name         |Environment Variable              |Key in `application.properties`   |
-|:-----------:|:---------------------------------|:---------------------------------|
-|input_bucket |KNATIVEBENCH_DNA_VIS_INPUT_BUCKET |knativebench.dna-vis.input_bucket |
-|output_bucket|KNATIVEBENCH_DNA_VIS_OUTPUT_BUCKET|knativebench.dna-vis.output_bucket|
-|key          |KNATIVEBENCH_DNA_VIS_KEY          |knativebench.dna-vis.key          |
+
+|     Name      | Environment Variable               | Key in `application.properties`    |
+|:-------------:|:-----------------------------------|:-----------------------------------|
+| input_bucket  | serverlessbench_DNA_VIS_INPUT_BUCKET  | serverlessbench.dna-vis.input_bucket  |
+| output_bucket | serverlessbench_DNA_VIS_OUTPUT_BUCKET | serverlessbench.dna-vis.output_bucket |
+|      key      | serverlessbench_DNA_VIS_KEY           | serverlessbench.dna-vis.key           |

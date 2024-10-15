@@ -3,27 +3,36 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.trl</groupId>
-  <artifactId>knative-quarkus-bench</artifactId>
+  <artifactId>java-serverless-benchmark</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
+    <module>benchmark-wrapper</module>
     <module>benchmarks</module>
   </modules>
   <properties>
-    <compiler-plugin.version>3.8.1</compiler-plugin.version>
+    <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <failsafe.useModulePath>false</failsafe.useModulePath>
     <maven.compiler.parameters>true</maven.compiler.parameters>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>2.16.2.Final</quarkus.platform.version>
-    <rest-assured.version>3.3.0</rest-assured.version>
-    <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
-    <qbicc.quarkus.version>1.0.0-SNAPSHOT</qbicc.quarkus.version>
+    <quarkus.platform.version>3.10.0</quarkus.platform.version>
+    <skipITs>true</skipITs>
+    <skipTests>true</skipTests>
+    <surefire-plugin.version>3.2.5</surefire-plugin.version>
   </properties>
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>apache-snapshots</id>
+      <url>https://repository.apache.org/snapshots/</url>
+    </repository>
+  </repositories>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -34,9 +43,9 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.qbicc.quarkus</groupId>
-        <artifactId>quarkus-qbicc</artifactId>
-        <version>${qbicc.quarkus.version}</version>
+        <groupId>org.apache.jclouds</groupId>
+        <artifactId>jclouds-allblobstore</artifactId>
+        <version>2.6.1-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -50,4 +59,36 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>skip-for-pom</id>
+      <activation>
+        <property>
+          <name>packaging</name>
+          <value>pom</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.2.0</version>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>com.kohlschutter.mavenplugins</groupId>
+            <artifactId>copy-rename-maven-plugin</artifactId>
+            <version>2.0.0</version>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

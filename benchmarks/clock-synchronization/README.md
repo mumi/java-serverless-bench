@@ -26,14 +26,14 @@ target/clock-synchronization-1.0.0-SNAPSHOT-runner
 
 This application receives the following parameters from POST data in JSON format:
 
-|Name         |Value                         |Required?|Default|
-|:---------------:|:-----------------------------------------------|:-:|:-----:|
-|output_bucket    |COS bucket to download input files              |Y  |(None) |
-|server_address   |Server IP address                               |Y  |(None) |
-|server_pot       |Server port number                              |Y  |(None) |
-|repetitions      |Number of repetition to finish earlier          |N  |1      |
-|request_id       |any string that will be included in the message |N  |"test" |
-|debug            |Flag if output is uploaded to COS               |N  |false  |
+|      Name      | Value                                           | Required? | Default |
+|:--------------:|:------------------------------------------------|:---------:|:-------:|
+|     bucket     | COS bucket to upload files                      |     Y     | (None)  |
+| server_address | Server IP address                               |     Y     | (None)  |
+|   server_pot   | Server port number                              |     Y     | (None)  |
+|  repetitions   | Number of repetition to finish earlier          |     N     |    1    |
+|   request_id   | any string that will be included in the message |     N     | "test"  |
+|     debug      | Flag if output is uploaded to COS               |     N     |  false  |
 
 For example:
 

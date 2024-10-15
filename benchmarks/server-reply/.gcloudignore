@@ -1,0 +1,16 @@
+# This is only for the native deployment on gcp cloud run
+
+.*
+README.md
+pom.xml
+func.yaml
+src/main/java/**
+src/main/resources/**
+target/classes
+target/generated-sources
+target/generated-test-sources
+target/maven-archiver
+target/maven-status
+target/quarkus-app
+target/*jar
+target/*.properties
